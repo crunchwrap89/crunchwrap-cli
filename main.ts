@@ -4,7 +4,7 @@ import { initCommand } from "./init.ts";
 const [cmd] = Deno.args;
 
 if (!cmd || cmd === "-h" || cmd === "--help") {
-    console.log(`
+  console.log(`
 crunchwrap — Crunchwrap App CLI
 
 Usage:
@@ -13,12 +13,12 @@ Usage:
 Commands:
   init    Initialize a new Crunchwrap project
 `);
-    Deno.exit(0);
+  Deno.exit(0);
 }
 
 if (cmd === "init") {
-    await initCommand();
-    Deno.exit(0);
+  await initCommand();
+  Deno.exit(0);
 }
 
 console.error(red(`Unknown command: ${cmd}`));
