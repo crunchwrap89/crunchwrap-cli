@@ -13,16 +13,26 @@ deno run -A jsr:@crunchwrap/cli init
 Or install it globally:
 
 ```bash
-deno install -g -A jsr:@crunchwrap/cli
+deno install -g -A --name crunchwrap jsr:@crunchwrap/cli
 ```
+
+**Note:** Ensure that your Deno bin directory is in your `PATH`. If the command is not found after installation, add this to your shell profile (e.g., `~/.zshrc` or `~/.bashrc`):
+
+```bash
+export PATH="$HOME/.deno/bin:$PATH"
+```
+
+Then restart your terminal or run `source ~/.zshrc` (or the appropriate file for your shell).
 
 ## Usage
 
-To start a new project:
+To start a new project, use the installed command directly:
 
 ```bash
 crunchwrap init
 ```
+
+(Do not use `deno crunchwrap init` once installed globally.)
 
 Follow the interactive prompts to set up your project name, metadata, and select a template.
 
