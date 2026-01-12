@@ -32,51 +32,73 @@ export async function promptInput(
     }
 }
 
+type Choice<T> = {
+    label: string;
+    value: T;
+};
+
 export async function promptSelect<T>(
     label: string,
-    choices: { label: string; value: T }[],
+    choices: Choice<T>[],
 ): Promise<T> {
     console.log(bold(label));
     console.log(cyan("Use ↑ ↓ and Enter\n"));
 
     Deno.stdin.setRaw(true, { cbreak: true });
+
     let index = 0;
+    const encoder = new TextEncoder();
 
     const render = () => {
-        // clear last render
-        const lines = choices.length;
-        Deno.stdout.writeSync(new TextEncoder().encode(`\x1b[${lines}A`));
-        Deno.stdout.writeSync(new TextEncoder().encode(`\x1b[J`));
+        // Clear previous lines
+        Deno.stdout.writeSync(encoder.encode(`\x1b[${choices.length}A`));
+        Deno.stdout.writeSync(encoder.encode(`\x1b[J`));
 
-        choices.forEach((c, i) => {
+        for (let i = 0; i < choices.length; i++) {
             const isActive = i === index;
-            console.log(isActive ? `> ${c.label}` : `  ${c.label}`);
-        });
+            const prefix = isActive ? ">" : " ";
+            console.log(`${prefix} ${choices[i].label}`);
+        }
     };
 
-    // initial list render
-    choices.forEach((c, i) => console.log(i === index ? `> ${c.label}` : `  ${c.label}`));
+    // Initial render
+    for (let i = 0; i < choices.length; i++) {
+        console.log(`  ${choices[i].label}`);
+    }
+    index = 0;
+    render();
 
-    const buf = new Uint8Array(8);
+    const buffer = new Uint8Array(8);
 
-    while (true) {
-        const n = await Deno.stdin.read(buf);
-        if (!n) continue;
+    try {
+        while (true) {
+            const n = await Deno.stdin.read(buffer);
+            if (!n) continue;
 
-        const key = [...buf.slice(0, n)];
+            const key = buffer.slice(0, n);
 
-        // Enter
-        if (key[0] === 13) break;
+            // Enter key
+            if (key[0] === 13) break;
 
-        // Arrow keys: ESC [ A/B
-        if (key[0] === 27 && key[1] === 91) {
-            if (key[2] === 65) index = Math.max(0, index - 1); // up
-            if (key[2] === 66) index = Math.min(choices.length - 1, index + 1); // down
-            render();
+            // Arrow keys (ESC [ A/B)
+            if (key[0] === 27 && key[1] === 91) {
+                if (key[2] === 65) { // Up
+                    index = index > 0 ? index - 1 : choices.length - 1;
+                } else if (key[2] === 66) { // Down
+                    index = index < choices.length - 1 ? index + 1 : 0;
+                }
+                render();
+            }
+
+            // Ctrl+C
+            if (key[0] === 3) {
+                Deno.exit(0);
+            }
         }
+    } finally {
+        Deno.stdin.setRaw(false);
     }
 
-    Deno.stdin.setRaw(false);
     console.log("");
     return choices[index].value;
 }

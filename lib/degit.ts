@@ -1,58 +1,62 @@
+/**
+ * Normalizes a GitHub URL to "owner/repo" format.
+ */
 function normalizeToDegitSource(repoUrl: string): string {
-    // Accept:
-    //  https://github.com/owner/repo
-    //  https://github.com/owner/repo.git
-    // Output:
-    //  owner/repo
-    const m = repoUrl.match(/^https:\/\/github\.com\/([^/]+)\/([^/]+)(\/.*)?$/);
-    if (!m) throw new Error("Invalid GitHub repo URL.");
+    const match = repoUrl.match(/^https:\/\/github\.com\/([^/]+)\/([^/]+)(\/.*)?$/);
+    if (!match) {
+        throw new Error(`Invalid GitHub repository URL: ${repoUrl}`);
+    }
 
-    const owner = m[1];
-    const repo = m[2].replace(/\.git$/, "");
+    const owner = match[1];
+    const repo = match[2].replace(/\.git$/, "");
     return `${owner}/${repo}`;
 }
 
-async function run(cmd: string[], cwd?: string) {
-    const p = new Deno.Command(cmd[0], {
-        args: cmd.slice(1),
+/**
+ * Executes a shell command and returns the output.
+ */
+async function execCommand(command: string[], cwd?: string): Promise<void> {
+    const cmd = new Deno.Command(command[0], {
+        args: command.slice(1),
         cwd,
         stdout: "null",
         stderr: "piped",
     });
 
-    const res = await p.output();
-    if (!res.success) {
-        throw new Error(new TextDecoder().decode(res.stderr));
+    const { success, stderr } = await cmd.output();
+    if (!success) {
+        throw new Error(new TextDecoder().decode(stderr));
     }
 }
 
+/**
+ * Checks if a command exists in the system path.
+ */
 async function commandExists(name: string): Promise<boolean> {
     try {
-        const p = new Deno.Command(name, {
+        const cmd = new Deno.Command(name, {
             args: ["--version"],
             stdout: "null",
             stderr: "null",
         });
-        const res = await p.output();
-        return res.success;
+        const { success } = await cmd.output();
+        return success;
     } catch {
         return false;
     }
 }
 
+/**
+ * Clones a repository to a directory using degit.
+ */
 export async function degitRepoToDir(repoUrl: string, destDir: string) {
     const source = normalizeToDegitSource(repoUrl);
 
-    // Prefer bunx (faster) if available, else fallback to npx
+    // Use bunx if available (it's faster), otherwise fallback to npx
     const hasBun = await commandExists("bun");
-
-    // Option flags:
-    // --force: overwrite target if exists (we already prevent this, but ok)
-    // --cache: keep cache (faster for repeated)
-    // --mode=tar: tarball fetch (fast and clean)
     const runner = hasBun ? ["bunx"] : ["npx", "--yes"];
 
-    await run([
+    await execCommand([
         ...runner,
         "degit",
         source,

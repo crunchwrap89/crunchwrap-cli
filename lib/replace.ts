@@ -16,11 +16,14 @@ const SKIP_EXT = new Set([
     ".zip",
 ]);
 
+/**
+ * Replaces placeholders in all files of a directory.
+ */
 export async function replacePlaceholdersInRepo(
     rootDir: string,
     meta: Record<string, string>,
 ) {
-    const replacements = new Map<string, string>([
+    const replacements: [string, string][] = [
         ["{{PROJECT_NAME}}", meta.projectname],
         ["{{PROJECT_SLUG}}", meta.slug],
         ["{{SHORT_NAME}}", meta.shortname],
@@ -29,31 +32,35 @@ export async function replacePlaceholdersInRepo(
         ["{{DESCRIPTION}}", meta.description],
         ["{{EMAIL}}", meta.email],
         ["{{PHONE}}", meta.phone],
-    ]);
+    ];
 
     for await (const entry of walk(rootDir, { includeDirs: false })) {
-        const p = entry.path;
+        const path = entry.path;
+        const extension = extname(path).toLowerCase();
 
-        if (SKIP_EXT.has(extname(p).toLowerCase())) continue;
+        // Skip binary files and specific directories
+        if (SKIP_EXT.has(extension)) continue;
 
-        // skip directories in path
-        const parts = p.split(/[\\/]/g);
-        if (parts.some((x) => SKIP_DIRS.has(x))) continue;
+        const pathParts = path.split(/[\\/]/g);
+        if (pathParts.some((part) => SKIP_DIRS.has(part))) continue;
 
         let content: string;
         try {
-            content = await Deno.readTextFile(p);
+            content = await Deno.readTextFile(path);
         } catch {
+            // Skip files that can't be read as text
             continue;
         }
 
-        let out = content;
-        for (const [needle, value] of replacements.entries()) {
-            out = out.split(needle).join(value ?? "");
+        let updatedContent = content;
+        for (const [placeholder, value] of replacements) {
+            if (updatedContent.includes(placeholder)) {
+                updatedContent = updatedContent.replaceAll(placeholder, value ?? "");
+            }
         }
 
-        if (out !== content) {
-            await Deno.writeTextFile(p, out);
+        if (updatedContent !== content) {
+            await Deno.writeTextFile(path, updatedContent);
         }
     }
 }
