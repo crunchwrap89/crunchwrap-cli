@@ -1,6 +1,6 @@
 {
   "name": "@crunchwrap/cli",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "A CLI tool to quickly initialize new Crunchwrap projects from templates",
   "license": "MIT",
   "exports": "./main.ts",
@@ -10,8 +10,7 @@
   "imports": {
     "@std/fs": "jsr:@std/fs@^1.0.21",
     "@std/path": "jsr:@std/path@^1.1.4",
-    "@std/fmt/colors": "jsr:@std/fmt@^1.0.8/colors",
-    "@std/cli": "jsr:@std/cli@^1.0.9"
+    "@std/fmt/colors": "jsr:@std/fmt@^1.0.8/colors"
   },
   "publish": {
     "exclude": [

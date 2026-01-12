@@ -24,6 +24,14 @@ To update the CLI to the latest version, run the installation command with the `
 deno install -g -A --force --name crunchwrap jsr:@crunchwrap/cli
 ```
 
+### Uninstalling
+
+To uninstall the CLI, use the `deno uninstall` command:
+
+```bash
+deno uninstall -g crunchwrap
+```
+
 ### Verifying Version
 
 To check which version of the CLI you have installed, run:

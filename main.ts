@@ -11,26 +11,19 @@
  */
 
 import { red } from "@std/fmt/colors";
-import { parseArgs } from "@std/cli/parse-args";
 import { initCommand } from "./init.ts";
 import denoConfig from "./deno.json" with { type: "json" };
 
-const args = parseArgs(Deno.args, {
-  boolean: ["version", "help"],
-  alias: {
-    version: "v",
-    help: "h",
-  },
-});
+const args = Deno.args;
 
-if (args.version) {
+if (args.includes("--version") || args.includes("-v")) {
   console.log(denoConfig.version);
   Deno.exit(0);
 }
 
-if (args.help || args._.length === 0) {
+if (args.includes("--help") || args.includes("-h") || args.length === 0) {
   console.log(`
-crunchwrap — Crunchwrap App CLI (v${denoConfig.version})
+Crunchwrap App CLI (v${denoConfig.version})
 
 Usage:
   crunchwrap init
@@ -45,7 +38,7 @@ Commands:
   Deno.exit(0);
 }
 
-const cmd = args._[0];
+const cmd = args[0];
 
 if (cmd === "init") {
   await initCommand();
