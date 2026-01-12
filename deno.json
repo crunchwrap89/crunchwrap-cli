@@ -1,6 +1,6 @@
 {
   "name": "@crunchwrap/cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A CLI tool to quickly initialize new Crunchwrap projects from templates",
   "license": "MIT",
   "exports": "./main.ts",
