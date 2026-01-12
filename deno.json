@@ -1,6 +1,7 @@
 {
   "name": "@crunchwrap/cli",
   "version": "0.1.0",
+  "license": "MIT",
   "exports": "./main.ts",
   "tasks": {
     "dev": "deno run -A main.ts init"
