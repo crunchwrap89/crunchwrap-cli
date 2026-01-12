@@ -10,5 +10,10 @@
     "@std/fs": "jsr:@std/fs@^1.0.0",
     "@std/path": "jsr:@std/path@^1.0.0",
     "@std/fmt/colors": "jsr:@std/fmt@^1.0.0/colors"
+  },
+  "publish": {
+    "exclude": [
+      ".DS_Store"
+    ]
   }
 }
