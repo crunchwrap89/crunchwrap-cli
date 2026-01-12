@@ -16,6 +16,22 @@ Or install it globally:
 deno install -g -A --name crunchwrap jsr:@crunchwrap/cli
 ```
 
+### Updating
+
+To update the CLI to the latest version, run the installation command with the `--force` (or `-f`) flag:
+
+```bash
+deno install -g -A --force --name crunchwrap jsr:@crunchwrap/cli
+```
+
+### Verifying Version
+
+To check which version of the CLI you have installed, run:
+
+```bash
+crunchwrap --version
+```
+
 **Note:** Ensure that your Deno bin directory is in your `PATH`. If the command is not found after installation, add this to your shell profile (e.g., `~/.zshrc` or `~/.bashrc`):
 
 ```bash

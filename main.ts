@@ -12,15 +12,25 @@
 
 import { red } from "@std/fmt/colors";
 import { initCommand } from "./init.ts";
+import denoConfig from "./deno.json" with { type: "json" };
 
 const [cmd] = Deno.args;
 
+if (cmd === "-v" || cmd === "--version") {
+  console.log(denoConfig.version);
+  Deno.exit(0);
+}
+
 if (!cmd || cmd === "-h" || cmd === "--help") {
   console.log(`
-crunchwrap — Crunchwrap App CLI
+crunchwrap — Crunchwrap App CLI (v${denoConfig.version})
 
 Usage:
   crunchwrap init
+
+Options:
+  -v, --version  Show version
+  -h, --help     Show help
 
 Commands:
   init    Initialize a new Crunchwrap project

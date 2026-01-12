@@ -1,10 +1,9 @@
 {
   "version": "5",
   "specifiers": {
-    "jsr:@std/fmt@1": "1.0.8",
-    "jsr:@std/fs@1": "1.0.21",
+    "jsr:@std/fmt@^1.0.8": "1.0.8",
+    "jsr:@std/fs@^1.0.21": "1.0.21",
     "jsr:@std/internal@^1.0.12": "1.0.12",
-    "jsr:@std/path@1": "1.1.4",
     "jsr:@std/path@^1.1.4": "1.1.4"
   },
   "jsr": {
@@ -15,7 +14,7 @@
       "integrity": "d720fe1056d78d43065a4d6e0eeb2b19f34adb8a0bc7caf3a4dbf1d4178252cd",
       "dependencies": [
         "jsr:@std/internal",
-        "jsr:@std/path@^1.1.4"
+        "jsr:@std/path"
       ]
     },
     "@std/internal@1.0.12": {
@@ -30,9 +29,9 @@
   },
   "workspace": {
     "dependencies": [
-      "jsr:@std/fmt@1",
-      "jsr:@std/fs@1",
-      "jsr:@std/path@1"
+      "jsr:@std/fmt@^1.0.8",
+      "jsr:@std/fs@^1.0.21",
+      "jsr:@std/path@^1.1.4"
     ]
   }
 }
