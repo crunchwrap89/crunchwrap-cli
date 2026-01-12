@@ -1,0 +1,13 @@
+{
+  "name": "@crunchwrap/cli",
+  "version": "0.1.0",
+  "exports": "./main.ts",
+  "tasks": {
+    "dev": "deno run -A main.ts init"
+  },
+  "imports": {
+    "@std/fs": "jsr:@std/fs@^1.0.0",
+    "@std/path": "jsr:@std/path@^1.0.0",
+    "@std/fmt/colors": "jsr:@std/fmt@^1.0.0/colors"
+  }
+}
