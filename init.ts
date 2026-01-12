@@ -111,13 +111,33 @@ export async function initCommand() {
 
     spinner.stop(true);
 
+    // ------------------------
+    // Step 4: Firebase Init
+    // ------------------------
+    console.log(cyan("\nRunning firebase init..."));
+    try {
+      const firebaseCmd = new Deno.Command("firebase", {
+        args: ["init"],
+        cwd: destDir,
+        stdin: "inherit",
+        stdout: "inherit",
+        stderr: "inherit",
+      });
+      const status = await firebaseCmd.spawn().status;
+      if (!status.success) {
+        console.log(yellow("Firebase initialization was not completed successfully."));
+      }
+    } catch (_err) {
+      console.log(yellow("Could not run 'firebase init'. Make sure you have firebase-tools installed."));
+    }
+
     console.log(
       green(`\nProject successfully generated in: ${meta.projectname}`),
     );
     console.log(green("Next steps:"));
     console.log(cyan(`  cd ${meta.projectname}`));
-    console.log(cyan("  npm install"));
-    console.log(cyan("  npm run dev\n"));
+    console.log(cyan("  yarn install"));
+    console.log(cyan("  yarn dev\n"));
   } catch (err) {
     spinner.stop(false);
     console.error(red("\nFailed to generate project."));
