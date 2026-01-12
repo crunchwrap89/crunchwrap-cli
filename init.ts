@@ -1,3 +1,10 @@
+/**
+ * @module
+ *
+ * This module contains the logic for the `init` command, which interactive
+ * initializes a new project from a template.
+ */
+
 import { cyan, green, red, yellow } from "@std/fmt/colors";
 import { resolve } from "@std/path";
 import { exists } from "@std/fs";

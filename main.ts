@@ -1,3 +1,15 @@
+/**
+ * @module
+ *
+ * This module is the entry point for the crunchwrap CLI.
+ * It handles command-line arguments and dispatches to the appropriate commands.
+ *
+ * @example
+ * ```bash
+ * deno run -A main.ts init
+ * ```
+ */
+
 import { red } from "@std/fmt/colors";
 import { initCommand } from "./init.ts";
 
