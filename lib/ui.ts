@@ -3,14 +3,14 @@ export function startSpinner(text: string) {
   let i = 0;
   const timer = setInterval(() => {
     const frame = frames[i++ % frames.length];
-    Deno.stdout.writeSync(new TextEncoder().encode(`\r${frame} ${text}`));
+    Deno.stdout.writeSync(new TextEncoder().encode(`\r  ${frame} ${text}`));
   }, 80);
 
   return {
     stop(success: boolean) {
       clearInterval(timer);
       const icon = success ? "✅" : "❌";
-      Deno.stdout.writeSync(new TextEncoder().encode(`\r${icon} ${text}\n`));
+      Deno.stdout.writeSync(new TextEncoder().encode(`\r  ${icon} ${text}\n`));
     },
   };
 }

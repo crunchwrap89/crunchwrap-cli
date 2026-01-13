@@ -1,4 +1,4 @@
-import { bold, cyan } from "@std/fmt/colors";
+import { bold, cyan, green } from "@std/fmt/colors";
 
 type InputOptions = {
   required?: boolean;
@@ -17,14 +17,14 @@ export function promptInput(
     const value = v.trim() === "" ? defaultValue : v;
 
     if (opts.required && !value.trim()) {
-      console.log("This value is required.");
+      console.log("  ⚠️  This value is required.");
       continue;
     }
 
     if (opts.validate) {
       const err = opts.validate(value);
       if (err) {
-        console.log(err);
+        console.log(`  ${err}`);
         continue;
       }
     }
@@ -43,7 +43,7 @@ export async function promptSelect<T>(
   choices: Choice<T>[],
 ): Promise<T> {
   console.log(bold(label));
-  console.log(cyan("Use ↑ ↓ and Enter\n"));
+  console.log(cyan("  (Use ↑ ↓ and Enter to select)\n"));
 
   Deno.stdin.setRaw(true, { cbreak: true });
 
@@ -57,14 +57,15 @@ export async function promptSelect<T>(
 
     for (let i = 0; i < choices.length; i++) {
       const isActive = i === index;
-      const prefix = isActive ? ">" : " ";
-      console.log(`${prefix} ${choices[i].label}`);
+      const prefix = isActive ? green(" ❯") : "  ";
+      const labelText = isActive ? green(bold(choices[i].label)) : choices[i].label;
+      console.log(`${prefix} ${labelText}`);
     }
   };
 
   // Initial render
   for (let i = 0; i < choices.length; i++) {
-    console.log(`  ${choices[i].label}`);
+    console.log(`   ${choices[i].label}`);
   }
   index = 0;
   render();
