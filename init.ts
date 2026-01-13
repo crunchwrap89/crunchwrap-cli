@@ -51,7 +51,10 @@ export async function initCommand() {
   // Handle shorthand user/repo format for GitHub
   if (gitRepo && !gitRepo.includes("://") && !gitRepo.includes("@")) {
     if (gitRepo.includes("/")) {
-      gitRepo = `git@github.com:${gitRepo}.git`;
+      const parts = gitRepo.split("/");
+      const user = parts[0].trim();
+      const repo = parts[1].trim();
+      gitRepo = `git@github.com:${user}/${repo}.git`;
       console.log(cyan(`  🚀 Expanded to: ${gitRepo}`));
     }
   }
@@ -229,17 +232,16 @@ export async function initCommand() {
             let repoPath = "";
             if (gitRepo.includes("github.com:")) {
               // SSH format: git@github.com:user/repo.git
-              repoPath = gitRepo.split("github.com:")[1]?.replace(/\.git$/, "");
+              // We need to handle both git@github.com:user/repo.git AND git@github.com:user/repo (without .git)
+              repoPath = gitRepo.split("github.com:")[1]
+                ?.replace(/\.git$/, "")
+                ?.trim();
             } else if (gitRepo.includes("github.com/")) {
               // HTTPS format: https://github.com/user/repo
-              repoPath = gitRepo.split("github.com/")[1]?.replace(/\.git$/, "");
+              repoPath = gitRepo.split("github.com/")[1]
+                ?.replace(/\.git$/, "")
+                ?.trim();
             }
-
-            // If we have a repoPath and it's just 'repo' (not 'user/repo'), 
-            // the gh CLI might need the full path or it might fail if we don't know the user.
-            // However, usually 'gh repo create' with just a name creates it under the current user.
-            // But since we asked for 'user/repo' or expanded to 'git@github.com:user/repo.git',
-            // repoPath should ideally be 'user/repo'.
 
             if (repoPath) {
               // Ensure we don't have leading/trailing slashes
@@ -282,8 +284,8 @@ export async function initCommand() {
                 // Check if repo already exists using 'gh repo view'
                 const viewCommand = new Deno.Command("gh", {
                   args: ["repo", "view", repoPath],
-                  stdout: "null",
-                  stderr: "null",
+                  stdout: "piped",
+                  stderr: "piped",
                 });
                 const viewResult = await viewCommand.output();
 
@@ -292,17 +294,28 @@ export async function initCommand() {
                 } else {
                   // If it doesn't exist, create it
                   console.log(cyan(`🚀 Creating ${gitVisibility} repository: ${repoPath}...`));
+                  
+                  // Use only the repo name part if repoPath is 'user/repo' because gh repo create [name] 
+                  // usually creates it under the authenticated user. 
+                  // If repoPath is 'user/repo', gh repo create user/repo works if 'user' is the current user.
                   const ghCommand = new Deno.Command("gh", {
                     args: ["repo", "create", repoPath, visibilityFlag, "--confirm"],
                     stdout: "piped",
                     stderr: "piped",
                   });
                   const { success, stdout, stderr } = await ghCommand.output();
+                  
                   if (!success) {
                     const errorMsg = new TextDecoder().decode(stderr);
-                    console.log(yellow("⚠️  Could not create GitHub repository via 'gh' CLI."));
-                    console.log(red(errorMsg));
-                    console.log(yellow("   Please ensure the repository exists or create it manually."));
+                    
+                    // If it failed because it already exists (sometimes view fails but create fails too)
+                    if (errorMsg.includes("already exists")) {
+                      console.log(yellow("ℹ️  GitHub repository already exists (detected during creation)."));
+                    } else {
+                      console.log(yellow("⚠️  Could not create GitHub repository via 'gh' CLI."));
+                      console.log(red(errorMsg));
+                      console.log(yellow("   Please ensure the repository exists or create it manually."));
+                    }
                   } else {
                     const output = new TextDecoder().decode(stdout);
                     if (output.trim()) console.log(cyan(output.trim()));
@@ -311,8 +324,11 @@ export async function initCommand() {
                 }
               }
             }
-          } catch (_e) {
+          } catch (err) {
             console.log(yellow("⚠️  Error while checking/creating GitHub repository. Proceeding anyway."));
+            if (err instanceof Error) {
+              console.log(red(`   Error: ${err.message}`));
+            }
           }
         }
 
