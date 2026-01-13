@@ -206,7 +206,7 @@ export async function initCommand() {
     // Step 5: Git Initialization and Publishing
     // ------------------------
     if (gitRepo) {
-      console.log(cyan("\n🛠️  Initializing git repository and publishing..."));
+      console.log(cyan("\n🛠️  Initializing local git repository..."));
       try {
         const runGit = async (args: string[]) => {
           const command = new Deno.Command("git", {
@@ -249,9 +249,9 @@ export async function initCommand() {
             if (repoPath) {
               // Ensure we don't have leading/trailing slashes
               repoPath = repoPath.replace(/^\/+|\/+$/g, "");
-              
+
               console.log(cyan(`\n🐙 Ensuring GitHub repository exists: ${repoPath}`));
-              
+
               // First, check if gh is installed and authenticated
               const authCheck = new Deno.Command("gh", {
                 args: ["auth", "status"],
@@ -259,108 +259,112 @@ export async function initCommand() {
                 stderr: "piped",
               });
               const authResult = await authCheck.output();
-              
+
               if (!authResult.success) {
-                console.log(yellow("⚠️  GitHub CLI (gh) is not authenticated or not installed."));
-                console.log(yellow("   Please run 'gh auth login' or create the repository manually at https://github.com/new"));
-                
-                // Check if the user is using HTTPS and suggest SSH or PAT
-                if (gitRepo.startsWith("https://github.com/")) {
-                  console.log(yellow("\n💡 Pro-tip: Using HTTPS with GitHub often requires a Personal Access Token."));
-                  console.log(yellow("   Consider using SSH (git@github.com:user/repo.git) instead to avoid login prompts."));
-                }
-              } else {
-                // If authenticated, we can also ensure git is configured to use gh for credentials
-                try {
-                  const setupGit = new Deno.Command("gh", {
-                    args: ["auth", "setup-git"],
-                    stdout: "null",
-                    stderr: "null",
-                  });
-                  await setupGit.output();
-                } catch (_e) {
-                  // Ignore failures here
-                }
+                console.log(red("\n❌ GitHub CLI (gh) is required but not authenticated."));
+                console.log(
+                  yellow(
+                    "   Please run 'gh auth login' to authenticate and try again.",
+                  ),
+                );
+                Deno.exit(1);
+              }
 
-                const visibilityFlag = gitVisibility === "private" ? "--private" : "--public";
-                
-                // Check if repo already exists using 'gh repo view'
-                const viewCommand = new Deno.Command("gh", {
-                  args: ["repo", "view", repoPath],
-                  stdout: "piped",
-                  stderr: "piped",
+              // Ensure git is configured to use gh for credentials
+              try {
+                const setupGit = new Deno.Command("gh", {
+                  args: ["auth", "setup-git"],
+                  stdout: "null",
+                  stderr: "null",
                 });
-                const viewResult = await viewCommand.output();
+                await setupGit.output();
+              } catch (_e) {
+                // Ignore failures here
+              }
 
-                if (viewResult.success) {
-                  console.log(yellow("ℹ️  GitHub repository already exists."));
-                } else {
-                  // If it doesn't exist, create it
-                  console.log(cyan(`🚀 Creating ${gitVisibility} repository: ${repoPath}...`));
-                  
-                  // Use --source=. to link the current directory to the new repo
-                  // and --remote=origin to set up the remote.
-                  const ghCommand = new Deno.Command("gh", {
-                    args: ["repo", "create", repoPath, visibilityFlag, "--source=.", "--remote=origin"],
-                    stdout: "inherit",
-                    stderr: "inherit",
-                  });
-                  const { success } = await ghCommand.output();
-                  
-                  if (!success) {
-                    console.log(yellow("⚠️  Could not create GitHub repository via 'gh' CLI automatically."));
-                    console.log(yellow("   Please ensure the repository exists or create it manually."));
-                  } else {
-                    console.log(green("✅ GitHub repository created and linked successfully."));
-                  }
+              const visibilityFlag = gitVisibility === "private"
+                ? "--private"
+                : "--public";
+
+              // Check if repo already exists using 'gh repo view'
+              const viewCommand = new Deno.Command("gh", {
+                args: ["repo", "view", repoPath],
+                cwd: destDir,
+                stdout: "piped",
+                stderr: "piped",
+              });
+              const viewResult = await viewCommand.output();
+
+              if (!viewResult.success) {
+                // If it doesn't exist, create it and push
+                console.log(cyan(`🚀 Creating ${gitVisibility} repository: ${repoPath}...`));
+
+                // Use --source=. to link the current directory to the new repo
+                // --remote=origin to set up the remote
+                // --push to push the initial commit
+                const ghCommand = new Deno.Command("gh", {
+                  args: [
+                    "repo",
+                    "create",
+                    repoPath,
+                    visibilityFlag,
+                    "--source=.",
+                    "--remote=origin",
+                    "--push",
+                  ],
+                  cwd: destDir,
+                  stdout: "inherit",
+                  stderr: "inherit",
+                });
+                const { success } = await ghCommand.output();
+
+                if (!success) {
+                  throw new Error(`Failed to create GitHub repository via 'gh' CLI.`);
                 }
+
+                console.log(green("✅ GitHub repository created and pushed successfully."));
+              } else {
+                console.log(
+                  yellow("ℹ️  GitHub repository already exists. Linking and pushing..."),
+                );
+
+                // Link manually
+                const remoteCommand = new Deno.Command("git", {
+                  args: ["remote", "add", "origin", gitRepo],
+                  cwd: destDir,
+                  stdout: "null",
+                  stderr: "null",
+                });
+                await remoteCommand.output();
+
+                // Push manually
+                await runGit(["push", "-u", "origin", "main"]);
+                console.log(green(`✅ Pushed to existing repository: ${gitRepo}`));
               }
             }
           } catch (err) {
-            console.log(yellow("⚠️  Error while checking/creating GitHub repository. Proceeding anyway."));
+            console.log(yellow("\n⚠️  Failed to publish to GitHub."));
             if (err instanceof Error) {
-              console.log(red(`   Error: ${err.message}`));
+              console.log(red(`   ${err.message}`));
             }
+            console.log(
+              yellow(
+                "   Please ensure you have correct permissions and 'gh' is set up correctly.",
+              ),
+            );
           }
+        } else {
+          console.log(
+            yellow(
+              "\n⚠️  Only GitHub is supported for automated publishing via the 'gh' CLI.",
+            ),
+          );
+          console.log(yellow("   Skipping remote publishing."));
         }
-
-        // Try to add remote, ignore if it already exists (e.g. added by gh)
-        const remoteCommand = new Deno.Command("git", {
-          args: ["remote", "add", "origin", gitRepo],
-          cwd: destDir,
-          stdout: "null",
-          stderr: "null",
-        });
-        await remoteCommand.output();
-        
-        try {
-          await runGit(["push", "-u", "origin", "main"]);
-        } catch (err) {
-          console.log(red("\n❌ Failed to push to remote repository."));
-          
-          if (gitRepo.startsWith("https://github.com/")) {
-            console.log(yellow("\n🔑 Troubleshooting GitHub Authentication:"));
-            console.log(yellow("   GitHub no longer supports password authentication for Git operations."));
-            console.log(cyan("   Option 1: Use a Personal Access Token (PAT) as your password."));
-            console.log(cyan("   Option 2: Use the GitHub CLI: run 'gh auth login' then 'gh auth setup-git'."));
-            console.log(cyan("   Option 3: Use an SSH URL: git@github.com:username/repo.git"));
-          } else {
-            console.log(yellow("   This often happens if the repository wasn't created yet or you don't have push permissions."));
-          }
-          
-          console.log(yellow(`\n   URL: ${gitRepo}`));
-          throw err;
-        }
-
-        console.log(green("✅ Git repository initialized and pushed to remote."));
       } catch (err) {
-        console.log(
-          yellow(
-            "\n⚠️  Failed to initialize or push to git repository. Please do it manually.",
-          ),
-        );
+        console.log(yellow("\n⚠️  Failed to initialize git repository."));
         if (err instanceof Error) {
-          console.log(red(err.message));
+          console.log(red(`   ${err.message}`));
         }
       }
     }
