@@ -6,6 +6,16 @@
 
 ### Fixes
 
+## [0.1.9] - 2026-01-13
+
+### Miscellaneous
+
+- Search and replace texts
+
+### Features
+
+### Fixes
+
 ## [0.1.8] - 2026-01-12
 
 ### Miscellaneous
