@@ -42,7 +42,20 @@ export async function initCommand() {
   });
   const projectname = projectnameInput.toLowerCase();
 
-  const gitRepo = promptInput("🌐 Git repository URL (optional)", "");
+  const gitRepoInput = promptInput(
+    "🌐 Git repository URL or 'user/repo' (optional)",
+    "",
+  );
+  let gitRepo = gitRepoInput.trim();
+
+  // Handle shorthand user/repo format for GitHub
+  if (gitRepo && !gitRepo.includes("://") && !gitRepo.includes("@")) {
+    if (gitRepo.includes("/")) {
+      gitRepo = `https://github.com/${gitRepo}`;
+      console.log(cyan(`  🚀 Expanded to: ${gitRepo}`));
+    }
+  }
+
   let gitVisibility = "public";
   if (gitRepo) {
     gitVisibility = await promptSelect("🔒 Repository visibility", [
@@ -218,7 +231,7 @@ export async function initCommand() {
               // First, check if gh is installed and authenticated
               const authCheck = new Deno.Command("gh", {
                 args: ["auth", "status"],
-                stdout: "null",
+                stdout: "piped",
                 stderr: "piped",
               });
               const authResult = await authCheck.output();
@@ -226,7 +239,25 @@ export async function initCommand() {
               if (!authResult.success) {
                 console.log(yellow("⚠️  GitHub CLI (gh) is not authenticated or not installed."));
                 console.log(yellow("   Please run 'gh auth login' or create the repository manually at https://github.com/new"));
+                
+                // Check if the user is using HTTPS and suggest SSH or PAT
+                if (gitRepo.startsWith("https://github.com/")) {
+                  console.log(yellow("\n💡 Pro-tip: Using HTTPS with GitHub often requires a Personal Access Token."));
+                  console.log(yellow("   Consider using SSH (git@github.com:user/repo.git) instead to avoid login prompts."));
+                }
               } else {
+                // If authenticated, we can also ensure git is configured to use gh for credentials
+                try {
+                  const setupGit = new Deno.Command("gh", {
+                    args: ["auth", "setup-git"],
+                    stdout: "null",
+                    stderr: "null",
+                  });
+                  await setupGit.output();
+                } catch (_e) {
+                  // Ignore failures here
+                }
+
                 const visibilityFlag = gitVisibility === "private" ? "--private" : "--public";
                 
                 const ghCommand = new Deno.Command("gh", {
@@ -262,8 +293,18 @@ export async function initCommand() {
           await runGit(["push", "-u", "origin", "main"]);
         } catch (err) {
           console.log(red("\n❌ Failed to push to remote repository."));
-          console.log(yellow("   This often happens if the repository wasn't created yet or you don't have push permissions."));
-          console.log(yellow(`   Please check: ${gitRepo}`));
+          
+          if (gitRepo.startsWith("https://github.com/")) {
+            console.log(yellow("\n🔑 Troubleshooting GitHub Authentication:"));
+            console.log(yellow("   GitHub no longer supports password authentication for Git operations."));
+            console.log(cyan("   Option 1: Use a Personal Access Token (PAT) as your password."));
+            console.log(cyan("   Option 2: Use the GitHub CLI: run 'gh auth login' then 'gh auth setup-git'."));
+            console.log(cyan("   Option 3: Use an SSH URL: git@github.com:username/repo.git"));
+          } else {
+            console.log(yellow("   This often happens if the repository wasn't created yet or you don't have push permissions."));
+          }
+          
+          console.log(yellow(`\n   URL: ${gitRepo}`));
           throw err;
         }
 
