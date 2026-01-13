@@ -17,8 +17,8 @@ import { isValidProjectName, slugifyProjectName } from "./lib/validate.ts";
 
 export async function initCommand() {
   console.log(magenta(bold(`
-  _____                               _                                
- / ____|                             | |                               
+  _____                        _                                
+ / ____|                      | |                               
 | |     _ __ _   _ _ __   ___ | |__ __      __ _ __ __ _ _ __  
 | |    | '__| | | | '_ \\ / __| '_ \\\\ \\ /\\ / / '__/ _\` | '_ \\ 
 | |____| |  | |_| | | | | (__| | | |\\ V  V /| | | (_| | |_) |
@@ -213,33 +213,59 @@ export async function initCommand() {
             // Extract repo name from URL (e.g., https://github.com/user/repo -> user/repo)
             const repoPath = gitRepo.split("github.com/")[1]?.replace(/\.git$/, "");
             if (repoPath) {
-              console.log(cyan(`🐙 Ensuring GitHub repository exists: ${repoPath}`));
-              const visibilityFlag = gitVisibility === "private" ? "--private" : "--public";
+              console.log(cyan(`\n🐙 Ensuring GitHub repository exists: ${repoPath}`));
               
-              const ghCommand = new Deno.Command("gh", {
-                args: ["repo", "create", repoPath, visibilityFlag, "--confirm"],
-                stdout: "inherit",
+              // First, check if gh is installed and authenticated
+              const authCheck = new Deno.Command("gh", {
+                args: ["auth", "status"],
+                stdout: "null",
                 stderr: "piped",
               });
-              const { success, stderr } = await ghCommand.output();
-              if (!success) {
-                const errorMsg = new TextDecoder().decode(stderr);
-                if (errorMsg.includes("already exists")) {
-                  console.log(yellow("ℹ️  GitHub repository already exists."));
+              const authResult = await authCheck.output();
+              
+              if (!authResult.success) {
+                console.log(yellow("⚠️  GitHub CLI (gh) is not authenticated or not installed."));
+                console.log(yellow("   Please run 'gh auth login' or create the repository manually at https://github.com/new"));
+              } else {
+                const visibilityFlag = gitVisibility === "private" ? "--private" : "--public";
+                
+                const ghCommand = new Deno.Command("gh", {
+                  args: ["repo", "create", repoPath, visibilityFlag, "--confirm"],
+                  stdout: "inherit",
+                  stderr: "piped",
+                });
+                const { success, stderr } = await ghCommand.output();
+                if (!success) {
+                  const errorMsg = new TextDecoder().decode(stderr);
+                  if (errorMsg.includes("already exists")) {
+                    console.log(yellow("ℹ️  GitHub repository already exists."));
+                  } else {
+                    console.log(yellow("⚠️  Could not create GitHub repository via 'gh' CLI."));
+                    console.log(red(errorMsg));
+                    console.log(yellow("   Please ensure the repository exists or create it manually."));
+                  }
                 } else {
-                  console.log(yellow("⚠️  Could not create GitHub repository via 'gh' CLI. Proceeding assuming it exists."));
+                  console.log(green("✅ GitHub repository created successfully."));
                 }
               }
             }
           } catch (_e) {
-            // gh CLI might not be installed or other error, ignore and proceed
+            console.log(yellow("⚠️  Error while checking/creating GitHub repository. Proceeding anyway."));
           }
         }
 
         await runGit(["add", "."]);
         await runGit(["commit", "-m", "Initial commit from crunchwrap CLI"]);
         await runGit(["remote", "add", "origin", gitRepo]);
-        await runGit(["push", "-u", "origin", "main"]);
+        
+        try {
+          await runGit(["push", "-u", "origin", "main"]);
+        } catch (err) {
+          console.log(red("\n❌ Failed to push to remote repository."));
+          console.log(yellow("   This often happens if the repository wasn't created yet or you don't have push permissions."));
+          console.log(yellow(`   Please check: ${gitRepo}`));
+          throw err;
+        }
 
         console.log(green("✅ Git repository initialized and pushed to remote."));
       } catch (err) {
