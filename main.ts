@@ -26,14 +26,14 @@ if (args.includes("--help") || args.includes("-h") || args.length === 0) {
 Crunchwrap App CLI (v${denoConfig.version})
 
 Usage:
-  crunchwrap init
+  cw init
 
 Options:
   -v, --version  Show version
   -h, --help     Show help
 
 Commands:
-  init    Initialize a new Crunchwrap project
+  init    Initialize a new Crunchwrap app
 `);
   Deno.exit(0);
 }

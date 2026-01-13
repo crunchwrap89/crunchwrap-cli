@@ -16,6 +16,12 @@
 
 ### Fixes
 
+## [0.1.8] - 2026-01-12
+
+### Fixes
+
+- Improved error handling for `firebase init` when Firestore is not yet enabled in the Firebase console.
+
 ## [0.1.7] - 2026-01-12
 
 ### Miscellaneous

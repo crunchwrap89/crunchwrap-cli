@@ -32,6 +32,11 @@ export async function replacePlaceholdersInRepo(
     ["{{DESCRIPTION}}", meta.description],
     ["{{EMAIL}}", meta.email],
     ["{{PHONE}}", meta.phone],
+    ["template-title-placeholder", meta.title],
+    ["template-description-placeholder", meta.description],
+    ["template-email-placeholder", meta.email],
+    ["template-phone-placeholder", meta.phone],
+    ["template.com", meta.domainname],
   ];
 
   for await (const entry of walk(rootDir, { includeDirs: false })) {

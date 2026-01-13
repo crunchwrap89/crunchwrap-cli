@@ -65,13 +65,19 @@ export async function initCommand() {
     value: { key: string; url: string | null };
   }[] = [
     {
-      label: "Nuxt Tailwind Firebase",
+      label: "Nuxt Tailwind",
       value: {
         key: "nuxt4-tw-template",
         url: "https://github.com/crunchwrap89/nuxt4-tw-template",
       },
     },
-    { label: "TBD", value: { key: "tbd-b", url: null } },
+    {
+      label: "Nuxt Tailwind (Firebase)",
+      value: {
+        key: "nuxt4-tw-fb-template",
+        url: "https://github.com/crunchwrap89/nuxt4-tw-fb-template",
+      },
+    },
     { label: "TBD", value: { key: "tbd-c", url: null } },
   ];
 
@@ -114,21 +120,50 @@ export async function initCommand() {
     // ------------------------
     // Step 4: Firebase Init
     // ------------------------
-    console.log(cyan("\nRunning firebase init..."));
-    try {
-      const firebaseCmd = new Deno.Command("firebase", {
-        args: ["init"],
-        cwd: destDir,
-        stdin: "inherit",
-        stdout: "inherit",
-        stderr: "inherit",
-      });
-      const status = await firebaseCmd.spawn().status;
-      if (!status.success) {
-        console.log(yellow("Firebase initialization was not completed successfully."));
+    if (template.key.includes("-fb-")) {
+      console.log(cyan("\nRunning firebase init..."));
+      try {
+        const firebaseCmd = new Deno.Command("firebase", {
+          args: ["init"],
+          cwd: destDir,
+          stdin: "inherit",
+          stdout: "inherit",
+          stderr: "piped",
+        });
+
+        const process = firebaseCmd.spawn();
+        const { success, stderr } = await process.output();
+
+        if (!success) {
+          const errorMsg = new TextDecoder().decode(stderr);
+          if (errorMsg.includes("firestore")) {
+            console.log(
+              yellow(
+                "\nIt looks like Firestore is not yet enabled in your Firebase project.",
+              ),
+            );
+            console.log(
+              yellow("Please go to the Firebase Console to create it:"),
+            );
+            console.log(
+              cyan("https://console.firebase.google.com/project/_/firestore"),
+            );
+          } else {
+            console.log(
+              yellow("\nFirebase initialization was not completed successfully."),
+            );
+            if (errorMsg.trim()) {
+              console.log(red(errorMsg));
+            }
+          }
+        }
+      } catch (_err) {
+        console.log(
+          yellow(
+            "Could not run 'firebase init'. Make sure you have firebase-tools installed.",
+          ),
+        );
       }
-    } catch (_err) {
-      console.log(yellow("Could not run 'firebase init'. Make sure you have firebase-tools installed."));
     }
 
     console.log(
