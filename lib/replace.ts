@@ -24,18 +24,13 @@ export async function replacePlaceholdersInRepo(
   meta: Record<string, string>,
 ) {
   const replacements: [string, string][] = [
-    ["{{PROJECT_NAME}}", meta.projectname],
-    ["{{PROJECT_SLUG}}", meta.slug],
-    ["{{SHORT_NAME}}", meta.shortname],
-    ["{{DOMAIN_NAME}}", meta.domainname],
-    ["{{TITLE}}", meta.title],
-    ["{{DESCRIPTION}}", meta.description],
-    ["{{EMAIL}}", meta.email],
-    ["{{PHONE}}", meta.phone],
+    ["template-projectname-placeholder", meta.projectname],
+    ["template-shortname-placeholder", meta.shortname],
     ["template-title-placeholder", meta.title],
     ["template-description-placeholder", meta.description],
     ["template-email-placeholder", meta.email],
     ["template-phone-placeholder", meta.phone],
+    ["template-projectname-placeholder", meta.projectname],
     ["template.com", meta.domainname],
   ];
 
