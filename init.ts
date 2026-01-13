@@ -228,12 +228,23 @@ export async function initCommand() {
             // Handle HTTPS: https://github.com/user/repo
             let repoPath = "";
             if (gitRepo.includes("github.com:")) {
+              // SSH format: git@github.com:user/repo.git
               repoPath = gitRepo.split("github.com:")[1]?.replace(/\.git$/, "");
             } else if (gitRepo.includes("github.com/")) {
+              // HTTPS format: https://github.com/user/repo
               repoPath = gitRepo.split("github.com/")[1]?.replace(/\.git$/, "");
             }
 
+            // If we have a repoPath and it's just 'repo' (not 'user/repo'), 
+            // the gh CLI might need the full path or it might fail if we don't know the user.
+            // However, usually 'gh repo create' with just a name creates it under the current user.
+            // But since we asked for 'user/repo' or expanded to 'git@github.com:user/repo.git',
+            // repoPath should ideally be 'user/repo'.
+
             if (repoPath) {
+              // Ensure we don't have leading/trailing slashes
+              repoPath = repoPath.replace(/^\/+|\/+$/g, "");
+              
               console.log(cyan(`\n🐙 Ensuring GitHub repository exists: ${repoPath}`));
               
               // First, check if gh is installed and authenticated
@@ -268,23 +279,35 @@ export async function initCommand() {
 
                 const visibilityFlag = gitVisibility === "private" ? "--private" : "--public";
                 
-                const ghCommand = new Deno.Command("gh", {
-                  args: ["repo", "create", repoPath, visibilityFlag, "--confirm"],
-                  stdout: "inherit",
-                  stderr: "piped",
+                // Check if repo already exists using 'gh repo view'
+                const viewCommand = new Deno.Command("gh", {
+                  args: ["repo", "view", repoPath],
+                  stdout: "null",
+                  stderr: "null",
                 });
-                const { success, stderr } = await ghCommand.output();
-                if (!success) {
-                  const errorMsg = new TextDecoder().decode(stderr);
-                  if (errorMsg.includes("already exists")) {
-                    console.log(yellow("ℹ️  GitHub repository already exists."));
-                  } else {
+                const viewResult = await viewCommand.output();
+
+                if (viewResult.success) {
+                  console.log(yellow("ℹ️  GitHub repository already exists."));
+                } else {
+                  // If it doesn't exist, create it
+                  console.log(cyan(`🚀 Creating ${gitVisibility} repository: ${repoPath}...`));
+                  const ghCommand = new Deno.Command("gh", {
+                    args: ["repo", "create", repoPath, visibilityFlag, "--confirm"],
+                    stdout: "piped",
+                    stderr: "piped",
+                  });
+                  const { success, stdout, stderr } = await ghCommand.output();
+                  if (!success) {
+                    const errorMsg = new TextDecoder().decode(stderr);
                     console.log(yellow("⚠️  Could not create GitHub repository via 'gh' CLI."));
                     console.log(red(errorMsg));
                     console.log(yellow("   Please ensure the repository exists or create it manually."));
+                  } else {
+                    const output = new TextDecoder().decode(stdout);
+                    if (output.trim()) console.log(cyan(output.trim()));
+                    console.log(green("✅ GitHub repository created successfully."));
                   }
-                } else {
-                  console.log(green("✅ GitHub repository created successfully."));
                 }
               }
             }
