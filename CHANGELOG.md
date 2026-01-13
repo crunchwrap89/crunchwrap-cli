@@ -6,6 +6,16 @@
 
 ### Fixes
 
+## [0.1.13] - 2026-01-13
+
+### Miscellaneous
+
+- Improve github login handle further
+
+### Features
+
+### Fixes
+
 ## [0.1.12] - 2026-01-13
 
 ### Miscellaneous
