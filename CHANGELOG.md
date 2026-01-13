@@ -6,6 +6,16 @@
 
 ### Fixes
 
+## [0.1.14] - 2026-01-13
+
+### Miscellaneous
+
+- Changed to use ssh instead of https
+
+### Features
+
+### Fixes
+
 ## [0.1.13] - 2026-01-13
 
 ### Miscellaneous
