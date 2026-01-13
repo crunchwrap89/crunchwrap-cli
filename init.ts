@@ -51,7 +51,7 @@ export async function initCommand() {
   // Handle shorthand user/repo format for GitHub
   if (gitRepo && !gitRepo.includes("://") && !gitRepo.includes("@")) {
     if (gitRepo.includes("/")) {
-      gitRepo = `https://github.com/${gitRepo}`;
+      gitRepo = `git@github.com:${gitRepo}.git`;
       console.log(cyan(`  🚀 Expanded to: ${gitRepo}`));
     }
   }
@@ -223,8 +223,16 @@ export async function initCommand() {
         // If it's a GitHub repo, try to create it if it doesn't exist
         if (gitRepo.includes("github.com")) {
           try {
-            // Extract repo name from URL (e.g., https://github.com/user/repo -> user/repo)
-            const repoPath = gitRepo.split("github.com/")[1]?.replace(/\.git$/, "");
+            // Extract repo name from URL
+            // Handle SSH: git@github.com:user/repo.git
+            // Handle HTTPS: https://github.com/user/repo
+            let repoPath = "";
+            if (gitRepo.includes("github.com:")) {
+              repoPath = gitRepo.split("github.com:")[1]?.replace(/\.git$/, "");
+            } else if (gitRepo.includes("github.com/")) {
+              repoPath = gitRepo.split("github.com/")[1]?.replace(/\.git$/, "");
+            }
+
             if (repoPath) {
               console.log(cyan(`\n🐙 Ensuring GitHub repository exists: ${repoPath}`));
               
