@@ -6,6 +6,16 @@
 
 ### Fixes
 
+## [0.1.11] - 2026-01-13
+
+### Miscellaneous
+
+- Automate git and add more art
+
+### Features
+
+### Fixes
+
 ## [0.1.10] - 2026-01-13
 
 ### Miscellaneous
