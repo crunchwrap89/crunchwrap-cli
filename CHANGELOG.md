@@ -6,6 +6,16 @@
 
 ### Fixes
 
+## [0.1.10] - 2026-01-13
+
+### Miscellaneous
+
+- Update projectname
+
+### Features
+
+### Fixes
+
 ## [0.1.9] - 2026-01-13
 
 ### Miscellaneous
