@@ -223,6 +223,10 @@ export async function initCommand() {
 
         await runGit(["init"]);
 
+        await runGit(["add", "."]);
+        await runGit(["commit", "-m", "Initial commit from crunchwrap CLI"]);
+        await runGit(["branch", "-M", "main"]);
+
         // If it's a GitHub repo, try to create it if it doesn't exist
         if (gitRepo.includes("github.com")) {
           try {
@@ -232,7 +236,6 @@ export async function initCommand() {
             let repoPath = "";
             if (gitRepo.includes("github.com:")) {
               // SSH format: git@github.com:user/repo.git
-              // We need to handle both git@github.com:user/repo.git AND git@github.com:user/repo (without .git)
               repoPath = gitRepo.split("github.com:")[1]
                 ?.replace(/\.git$/, "")
                 ?.trim();
@@ -295,31 +298,20 @@ export async function initCommand() {
                   // If it doesn't exist, create it
                   console.log(cyan(`🚀 Creating ${gitVisibility} repository: ${repoPath}...`));
                   
-                  // Use only the repo name part if repoPath is 'user/repo' because gh repo create [name] 
-                  // usually creates it under the authenticated user. 
-                  // If repoPath is 'user/repo', gh repo create user/repo works if 'user' is the current user.
+                  // Use --source=. to link the current directory to the new repo
+                  // and --remote=origin to set up the remote.
                   const ghCommand = new Deno.Command("gh", {
-                    args: ["repo", "create", repoPath, visibilityFlag, "--confirm"],
-                    stdout: "piped",
-                    stderr: "piped",
+                    args: ["repo", "create", repoPath, visibilityFlag, "--source=.", "--remote=origin"],
+                    stdout: "inherit",
+                    stderr: "inherit",
                   });
-                  const { success, stdout, stderr } = await ghCommand.output();
+                  const { success } = await ghCommand.output();
                   
                   if (!success) {
-                    const errorMsg = new TextDecoder().decode(stderr);
-                    
-                    // If it failed because it already exists (sometimes view fails but create fails too)
-                    if (errorMsg.includes("already exists")) {
-                      console.log(yellow("ℹ️  GitHub repository already exists (detected during creation)."));
-                    } else {
-                      console.log(yellow("⚠️  Could not create GitHub repository via 'gh' CLI."));
-                      console.log(red(errorMsg));
-                      console.log(yellow("   Please ensure the repository exists or create it manually."));
-                    }
+                    console.log(yellow("⚠️  Could not create GitHub repository via 'gh' CLI automatically."));
+                    console.log(yellow("   Please ensure the repository exists or create it manually."));
                   } else {
-                    const output = new TextDecoder().decode(stdout);
-                    if (output.trim()) console.log(cyan(output.trim()));
-                    console.log(green("✅ GitHub repository created successfully."));
+                    console.log(green("✅ GitHub repository created and linked successfully."));
                   }
                 }
               }
@@ -332,9 +324,14 @@ export async function initCommand() {
           }
         }
 
-        await runGit(["add", "."]);
-        await runGit(["commit", "-m", "Initial commit from crunchwrap CLI"]);
-        await runGit(["remote", "add", "origin", gitRepo]);
+        // Try to add remote, ignore if it already exists (e.g. added by gh)
+        const remoteCommand = new Deno.Command("git", {
+          args: ["remote", "add", "origin", gitRepo],
+          cwd: destDir,
+          stdout: "null",
+          stderr: "null",
+        });
+        await remoteCommand.output();
         
         try {
           await runGit(["push", "-u", "origin", "main"]);
