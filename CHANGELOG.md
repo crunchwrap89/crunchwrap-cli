@@ -6,6 +6,16 @@
 
 ### Fixes
 
+## [0.1.12] - 2026-01-13
+
+### Miscellaneous
+
+- Handle login better
+
+### Features
+
+### Fixes
+
 ## [0.1.11] - 2026-01-13
 
 ### Miscellaneous
