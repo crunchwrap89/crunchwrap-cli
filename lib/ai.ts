@@ -2,6 +2,7 @@ import { startSpinner } from "./ui.ts";
 import { join } from "@std/path";
 import { ensureDir } from "@std/fs";
 import { GoogleGenAI } from "@google/genai";
+import { processLogo } from "./image.ts";
 
 /**
  * Generates a logo using Google's Gemini AI (Imagen model)
@@ -41,6 +42,10 @@ export async function generateLogo(
     await Deno.writeFile(logoPath, imageBuffer);
 
     spinner.stop(true);
+
+    // Process the logo into multiple sizes and formats
+    await processLogo(logoPath, destDir);
+
     return logoPath;
   } catch (err) {
     spinner.stop(false);
