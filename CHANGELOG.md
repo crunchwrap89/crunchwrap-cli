@@ -6,6 +6,14 @@
 
 ### Fixes
 
+## [0.1.21] - 2026-01-14
+
+### Features
+
+### Fixes
+
+- Fix AI Generation with imagen
+
 ## [0.1.20] - 2026-01-14
 
 ### Miscellaneous
