@@ -6,6 +6,16 @@
 
 ### Fixes
 
+## [0.1.22] - 2026-01-14
+
+### Miscellaneous
+
+- Add version contraint
+
+### Features
+
+### Fixes
+
 ## [0.1.21] - 2026-01-14
 
 ### Features
