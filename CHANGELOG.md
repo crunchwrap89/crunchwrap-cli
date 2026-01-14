@@ -6,6 +6,16 @@
 
 ### Fixes
 
+## [0.1.23] - 2026-01-14
+
+### Miscellaneous
+
+- handle conversion of images with ffmpeg
+
+### Features
+
+### Fixes
+
 ## [0.1.22] - 2026-01-14
 
 ### Miscellaneous
