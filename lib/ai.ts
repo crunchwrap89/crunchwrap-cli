@@ -1,6 +1,7 @@
 import { startSpinner } from "./ui.ts";
 import { join } from "@std/path";
 import { ensureDir } from "@std/fs";
+import { GoogleGenAI } from "@google/genai";
 
 /**
  * Generates a logo using Google's Gemini AI (Imagen model)
@@ -13,34 +14,19 @@ export async function generateLogo(
   const spinner = startSpinner("🎨 Generating logo with AI...");
 
   try {
-    // Note: Using imagen-4.0-generate-001 model via Gemini API
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:generateImages?key=${apiKey}`;
+    const ai = new GoogleGenAI({ apiKey });
 
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    const response = await ai.models.generateImages({
+      model: "imagen-4.0-generate-001",
+      prompt: prompt,
+      config: {
+        numberOfImages: 1,
+        aspectRatio: "1:1",
+        outputMimeType: "image/png",
       },
-      body: JSON.stringify({
-        prompt: prompt,
-        config: {
-          numberOfImages: 1,
-          aspectRatio: "1:1",
-          outputMimeType: "image/png",
-        },
-      }),
     });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      const errorMessage = errorData.error?.message || `API request failed with status ${response.status}`;
-      spinner.stop(false);
-      console.log(`  ⚠️  Failed to generate logo: ${errorMessage}`);
-      return null;
-    }
-
-    const data = await response.json();
-    const base64Image = data.generatedImages?.[0]?.image?.imageBytes;
+    const base64Image = response.generatedImages?.[0]?.image?.imageBytes;
 
     if (!base64Image) {
       spinner.stop(false);

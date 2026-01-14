@@ -10,7 +10,8 @@
   "imports": {
     "@std/fs": "jsr:@std/fs@^1.0.21",
     "@std/path": "jsr:@std/path@^1.1.4",
-    "@std/fmt/colors": "jsr:@std/fmt@^1.0.8/colors"
+    "@std/fmt/colors": "jsr:@std/fmt@^1.0.8/colors",
+    "@google/genai": "npm:@google/genai"
   },
   "publish": {
     "exclude": [

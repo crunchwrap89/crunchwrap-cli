@@ -16,6 +16,9 @@
 
 ### Fixes
 
+- Revert AI logo generation model to `imagen-3.0-generate-001` to fix 404 error caused by `imagen-4.0-generate-001` being unavailable or incorrectly specified.
+- Use `v1beta` endpoint with `generateImages` method for broader compatibility.
+
 ## [0.1.19] - 2026-01-14
 
 ### Miscellaneous
