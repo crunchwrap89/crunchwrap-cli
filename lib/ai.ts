@@ -13,8 +13,8 @@ export async function generateLogo(
   const spinner = startSpinner("🎨 Generating logo with AI...");
 
   try {
-    // Note: Using imagen-3.0-generate-001 model via Gemini API
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${apiKey}`;
+    // Note: Using imagen-4.0-generate-001 model via Gemini API
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:generateImages?key=${apiKey}`;
 
     const response = await fetch(url, {
       method: "POST",
@@ -22,13 +22,9 @@ export async function generateLogo(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        instances: [
-          {
-            prompt: prompt,
-          },
-        ],
-        parameters: {
-          sampleCount: 1,
+        prompt: prompt,
+        config: {
+          numberOfImages: 1,
           aspectRatio: "1:1",
           outputMimeType: "image/png",
         },
@@ -44,7 +40,7 @@ export async function generateLogo(
     }
 
     const data = await response.json();
-    const base64Image = data.predictions?.[0]?.bytesBase64Encoded;
+    const base64Image = data.generatedImages?.[0]?.image?.imageBytes;
 
     if (!base64Image) {
       spinner.stop(false);
