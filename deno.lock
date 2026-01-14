@@ -5,7 +5,7 @@
     "jsr:@std/fs@^1.0.21": "1.0.21",
     "jsr:@std/internal@^1.0.12": "1.0.12",
     "jsr:@std/path@^1.1.4": "1.1.4",
-    "npm:@google/genai@*": "1.35.0"
+    "npm:@google/genai@^1.35.0": "1.35.0"
   },
   "jsr": {
     "@std/fmt@1.0.8": {
@@ -369,7 +369,7 @@
       "jsr:@std/fmt@^1.0.8",
       "jsr:@std/fs@^1.0.21",
       "jsr:@std/path@^1.1.4",
-      "npm:@google/genai@*"
+      "npm:@google/genai@^1.35.0"
     ]
   }
 }

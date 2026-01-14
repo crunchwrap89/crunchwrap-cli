@@ -11,7 +11,7 @@
     "@std/fs": "jsr:@std/fs@^1.0.21",
     "@std/path": "jsr:@std/path@^1.1.4",
     "@std/fmt/colors": "jsr:@std/fmt@^1.0.8/colors",
-    "@google/genai": "npm:@google/genai"
+    "@google/genai": "npm:@google/genai@^1.35.0"
   },
   "publish": {
     "exclude": [
