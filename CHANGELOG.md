@@ -4,8 +4,12 @@
 
 ### Features
 
+- Implement AI logo generation using Google Gemini.
+
 ### Fixes
 
+- Fix error handling in `lib/ai.ts` to avoid local exception catching and improve reliability.
+- 
 ## [0.1.18] - 2026-01-13
 
 ### Miscellaneous

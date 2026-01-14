@@ -14,6 +14,7 @@ import { promptInput, promptSelect } from "./lib/prompt.ts";
 import { degitRepoToDir } from "./lib/degit.ts";
 import { replacePlaceholdersInRepo } from "./lib/replace.ts";
 import { isValidProjectName, slugifyProjectName } from "./lib/validate.ts";
+import { generateLogo } from "./lib/ai.ts";
 
 export async function initCommand() {
   console.log(magenta(bold(`
@@ -79,6 +80,20 @@ export async function initCommand() {
     "hello@example.com",
   );
   const phone = promptInput("📞 Phone number (optional)", "+46 7182387123");
+
+  // Logo generation prompt
+  console.log(cyan(bold("\n🎨 AI Logo Generation")));
+  const logoPrompt = promptInput(
+    "✨ Enter a prompt for your logo (optional, leave empty to skip)",
+    "",
+  );
+
+  let geminiApiKey = "";
+  if (logoPrompt) {
+    geminiApiKey = promptInput("🔑 Enter your Google Gemini API key", "", {
+      required: true,
+    });
+  }
 
   const meta = {
     projectname: projectname.trim(),
@@ -367,6 +382,14 @@ export async function initCommand() {
           console.log(red(`   ${err.message}`));
         }
       }
+    }
+
+    // ------------------------
+    // Step 4: AI Logo Generation (if prompt and key provided)
+    // ------------------------
+    if (logoPrompt && geminiApiKey) {
+      console.log("");
+      await generateLogo(logoPrompt, geminiApiKey, destDir);
     }
 
     console.log(
