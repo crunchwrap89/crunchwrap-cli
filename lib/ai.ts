@@ -18,7 +18,7 @@ export async function generateLogo(
     const ai = new GoogleGenAI({ apiKey });
 
     const response = await ai.models.generateImages({
-      model: "imagen-4.0-generate-001",
+      model: "gemini-3-pro-image-preview",
       prompt: prompt,
       config: {
         numberOfImages: 1,
