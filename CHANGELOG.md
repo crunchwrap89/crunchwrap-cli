@@ -6,6 +6,16 @@
 
 ### Fixes
 
+## [0.1.24] - 2026-01-15
+
+### Miscellaneous
+
+- change to gemini 3 pro model
+
+### Features
+
+### Fixes
+
 ## [0.1.23] - 2026-01-14
 
 ### Miscellaneous
