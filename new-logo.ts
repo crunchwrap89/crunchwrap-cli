@@ -48,8 +48,8 @@ export async function newLogoCommand() {
   const logoPath = await generateLogo(logoPrompt, geminiApiKey, destDir);
 
   if (logoPath) {
-    console.log(blue(`\n  ✅ Logo generated and processed successfully!`));
-    console.log(`  📂 Files created in: ${bold(destDir + "/public")}`);
+    console.log(blue(`\n  ✅ All done!`));
+    console.log(`  📂 Files updated in: ${bold(destDir + "/public")}`);
   } else {
     console.log(red(`\n  ❌ Failed to generate logo.`));
   }

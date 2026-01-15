@@ -11,6 +11,9 @@ export function startSpinner(text: string) {
     update(newText: string) {
       currentText = newText;
     },
+    start() {
+      // No-op for now, as update already changes the text and the timer is running
+    },
     stop(success: boolean) {
       clearInterval(timer);
       const icon = success ? "✅" : "❌";

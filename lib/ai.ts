@@ -3,6 +3,7 @@ import { join } from "@std/path";
 import { ensureDir } from "@std/fs";
 import { GoogleGenAI } from "@google/genai";
 import { processLogo } from "./image.ts";
+import { promptInput } from "./prompt.ts";
 
 /**
  * Generates a logo using Google's Gemini AI (Imagen model)
@@ -12,41 +13,60 @@ export async function generateLogo(
   apiKey: string,
   destDir: string,
 ): Promise<string | null> {
-  const spinner = startSpinner("🎨 Generating logo with AI...");
+  let spinner = startSpinner("🎨 Generating logo with AI...");
 
   try {
     const ai = new GoogleGenAI({ apiKey });
 
-    const response = await ai.models.generateImages({
+    // Initial message to start the chat
+    const chat = ai.chats.create({
       model: "gemini-3-pro-image-preview",
-      prompt: prompt,
       config: {
-        numberOfImages: 1,
-        aspectRatio: "1:1",
-        outputMimeType: "image/png",
+        responseModalities: ["TEXT", "IMAGE"],
       },
     });
 
-    const base64Image = response.generatedImages?.[0]?.image?.imageBytes;
+    let currentPrompt = prompt;
 
-    if (!base64Image) {
-      spinner.stop(false);
-      console.log("  ⚠️  Failed to generate logo: No image data received from AI.");
-      return null;
+    while (true) {
+      const response = await chat.sendMessage({ message: currentPrompt });
+
+      let base64Image: string | undefined;
+      for (const part of response.candidates?.[0]?.content?.parts || []) {
+        if (part.inlineData && part.inlineData.mimeType === "image/png") {
+          base64Image = part.inlineData.data;
+        }
+      }
+
+      if (!base64Image) {
+        spinner.stop(false);
+        console.log("  ⚠️  Failed to generate logo: No image data received from AI.");
+        return null;
+      }
+
+      const imageBuffer = Uint8Array.from(atob(base64Image), (c) => c.charCodeAt(0));
+      const publicDir = join(destDir, "public");
+      await ensureDir(publicDir);
+      const logoPath = join(publicDir, "logo.png");
+      await Deno.writeFile(logoPath, imageBuffer);
+
+      spinner.stop(true);
+
+      // Process the logo into multiple sizes and formats
+      await processLogo(logoPath, destDir);
+
+      const improvement = promptInput(
+        "✨ Would you like to improve this logo? (enter your instructions, or leave empty to finish)",
+        "",
+      );
+
+      if (!improvement) {
+        return logoPath;
+      }
+
+      currentPrompt = improvement;
+      spinner = startSpinner("🎨 Improving logo with AI...");
     }
-
-    const imageBuffer = Uint8Array.from(atob(base64Image), (c) => c.charCodeAt(0));
-    const publicDir = join(destDir, "public");
-    await ensureDir(publicDir);
-    const logoPath = join(publicDir, "logo.png");
-    await Deno.writeFile(logoPath, imageBuffer);
-
-    spinner.stop(true);
-
-    // Process the logo into multiple sizes and formats
-    await processLogo(logoPath, destDir);
-
-    return logoPath;
   } catch (err) {
     spinner.stop(false);
     console.log(`  ⚠️  An unexpected error occurred: ${err instanceof Error ? err.message : String(err)}`);
