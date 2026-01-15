@@ -41,7 +41,8 @@ export async function newLogoCommand() {
     { required: true }
   );
 
-  const geminiApiKey = promptInput("🔑 Enter your Google Gemini API key", "", {
+  const envApiKey = Deno.env.get("GEMINI_API_KEY");
+  const geminiApiKey = envApiKey || promptInput("🔑 Enter your Google Gemini API key", "", {
     required: true,
   });
 

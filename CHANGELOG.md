@@ -14,6 +14,11 @@
 
 ### Features
 
+- Refactored AI logo generation to use the latest `gemini-3-pro-image-preview` model via the standard `@google/genai` SDK.
+- Added support for `GEMINI_API_KEY` environment variable to skip manual API key entry.
+- Improved image processing and response handling for AI-generated logos.
+- Enhanced error reporting for Gemini API issues.
+
 ### Fixes
 
 ## [0.1.25] - 2026-01-15

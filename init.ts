@@ -88,8 +88,8 @@ export async function initCommand() {
     "",
   );
 
-  let geminiApiKey = "";
-  if (logoPrompt) {
+  let geminiApiKey = Deno.env.get("GEMINI_API_KEY") || "";
+  if (logoPrompt && !geminiApiKey) {
     geminiApiKey = promptInput("🔑 Enter your Google Gemini API key", "", {
       required: true,
     });

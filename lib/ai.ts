@@ -18,11 +18,12 @@ export async function generateLogo(
   try {
     const ai = new GoogleGenAI({ apiKey });
 
-    // Initial message to start the chat
     const chat = ai.chats.create({
       model: "gemini-3-pro-image-preview",
       config: {
-        responseModalities: ["TEXT", "IMAGE"],
+        imageConfig: {
+          aspectRatio: "1:1",
+        },
       },
     });
 
@@ -32,9 +33,13 @@ export async function generateLogo(
       const response = await chat.sendMessage({ message: currentPrompt });
 
       let base64Image: string | undefined;
-      for (const part of response.candidates?.[0]?.content?.parts || []) {
-        if (part.inlineData && part.inlineData.mimeType === "image/png") {
-          base64Image = part.inlineData.data;
+      const candidates = response.candidates;
+      if (candidates && candidates.length > 0) {
+        for (const part of candidates[0]?.content?.parts ?? []) {
+          if (part.inlineData && (part.inlineData.mimeType === "image/png" || part.inlineData.mimeType === "image/jpeg")) {
+            base64Image = part.inlineData.data;
+            break;
+          }
         }
       }
 
@@ -69,7 +74,11 @@ export async function generateLogo(
     }
   } catch (err) {
     spinner.stop(false);
-    console.log(`  ⚠️  An unexpected error occurred: ${err instanceof Error ? err.message : String(err)}`);
+    if (err instanceof Error && err.name === "ApiError") {
+      console.log(`  ⚠️  Gemini API Error: ${err.message} (Status: ${(err as any).status})`);
+    } else {
+      console.log(`  ⚠️  An unexpected error occurred: ${err instanceof Error ? err.message : String(err)}`);
+    }
     return null;
   }
 }
