@@ -6,6 +6,16 @@
 
 ### Fixes
 
+## [0.1.26] - 2026-01-15
+
+### Miscellaneous
+
+- ADd ability to chat to improve the logo image
+
+### Features
+
+### Fixes
+
 ## [0.1.25] - 2026-01-15
 
 ### Miscellaneous
