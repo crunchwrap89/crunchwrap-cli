@@ -6,6 +6,16 @@
 
 ### Fixes
 
+## [0.1.25] - 2026-01-15
+
+### Miscellaneous
+
+- Add ability to generate new logo without creating new project.
+
+### Features
+
+### Fixes
+
 ## [0.1.24] - 2026-01-15
 
 ### Miscellaneous
