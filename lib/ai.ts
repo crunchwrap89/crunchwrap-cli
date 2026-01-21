@@ -6,7 +6,7 @@ import { processLogo } from "./image.ts";
 import { promptInput } from "./prompt.ts";
 
 /**
- * Generates a logo using Google's Gemini AI (Imagen model)
+ * Generates a logo using Google's Gemini AI (Nano banana pro model).
  */
 export async function generateLogo(
   prompt: string,
