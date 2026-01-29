@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Features
+- Add ability to just export the pwa images from existing image.
 
 ### Fixes
 
