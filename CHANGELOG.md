@@ -3,6 +3,16 @@
 ## [Unreleased]
 
 ### Features
+
+### Fixes
+
+## [0.1.29] - 2026-01-29
+
+### Miscellaneous
+
+- Merge remote-tracking branch 'origin/main'
+
+### Features
 - Add ability to just export the pwa images from existing image.
 
 ### Fixes
