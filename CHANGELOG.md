@@ -6,6 +6,16 @@
 
 ### Fixes
 
+## [0.1.30] - 2026-01-29
+
+### Miscellaneous
+
+- Merge remote-tracking branch 'origin/main'
+
+### Features
+
+### Fixes
+
 ## [0.1.29] - 2026-01-29
 
 ### Miscellaneous
