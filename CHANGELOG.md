@@ -7,6 +7,16 @@
 
 ### Fixes
 
+## [0.1.28] - 2026-01-21
+
+### Miscellaneous
+
+- rename text
+
+### Features
+
+### Fixes
+
 ## [0.1.27] - 2026-01-15
 
 ### Miscellaneous
